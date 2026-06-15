@@ -1,0 +1,149 @@
+#game {
+	display: flex;
+	position: relative;
+	flex-direction: row;
+	background: var(--background);
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+}
+
+#game-area {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 24px;
+	padding: 30px 0;
+	width: 55%;
+	min-width: 0;
+	height: 100vh;
+	overflow: hidden;
+}
+
+#notification-area {
+	position: absolute;
+	top: 16px;
+	left: 0;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	z-index: 10;
+	pointer-events: none;
+}
+
+#player-info {
+	display: flex;
+	width: 25%;
+	height: 100%;
+	overflow: hidden;
+	flex-direction: column;
+	gap: 24px;
+	padding: 30px 0;
+}
+
+#action-area {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+	min-height: 48px;
+	height: 100%;
+	width: 100%;
+	gap: 30px;
+}
+
+#action-area > div:empty {
+    display: none;
+}
+
+#game-area-table {
+	display: flex;
+	position: relative;
+	flex: 1 1 auto;
+	--table-width: 200px;
+	--table-height: 200px;
+	z-index: 1;
+	background: transparent;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.game-board {
+  width: 100%;
+  height: auto;
+}
+
+.character-icon {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid black;
+    z-index: 5;
+}
+
+.move-button-container {
+	position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid black;
+    z-index: 5;
+	overflow:hidden;
+}
+
+.move-button:hover {
+	color:aqua;
+	opacity: 1;
+}
+
+#game-board-area {
+	position: relative;
+}
+
+#board-layer,
+#piece-layer,
+#ui-layer {
+	position: absolute;
+	inset: 0;
+}
+
+#suggestions,
+#accusation {
+	display: flex;
+	flex-direction: row;
+	gap: 20px;
+	align-items: center;
+	justify-content: center;
+}
+
+#accuse-selector-container,
+#suggest-selector-container {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+#dice-roll {
+	position: relative;
+	top: 0px;
+}
+
+.clue-card-button {
+	padding: 0;
+    border: none;
+    background: none;
+	height: 100%;
+	border: 2px solid red;
+}
+
+#shown-cards {
+	margin-top: 0;
+	position: relative;
+	top: 0px;
+	height: 39.9%;
+	width: 25.5%;
+	border: 2px solid red;
+}

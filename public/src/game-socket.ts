@@ -1,0 +1,196 @@
+import { Player, type PlayerStatus } from "@shared/player";
+import type { SerializedGame } from "@shared/game";
+import { destringifyLocation, Game } from "@shared/game";
+import { Person, Card } from "@shared/card";
+import { gameRoom, RoomStatus, type SerializedRoom } from "@shared/gameRoom";
+import {
+	endGameUI,
+	showRoomElements,
+	startGameUI,
+	updateUIGame,
+	updateUIPlayerList,
+	createMoveOptions,
+	renderActionButtons,
+	renderSuggestionEvidenceHand,
+	renderPassButton,
+	clearSuggestionButtons,
+	renderShownCard,
+	clearSuggestionResponses,
+	clearShownCard,
+	//renderLies
+} from "./game-ui-render";
+import { updateUIAllChat, updateUIPushChat } from "./game-ui-chat";
+import { gs } from "./session";
+import { updateURL } from "./url";
+
+export function initGameSocket(): void {
+	gs.socket.on("sent-player", (name: string) => {
+		gs.player.name = name;
+	});
+
+	gs.socket.on("joined-room", (raw: SerializedRoom) => {
+		const room = gameRoom.deserialize(raw);
+		updateURL(room.code);
+
+		gs.room = room;
+		gs.player = room.players.get(gs.player.id) ?? gs.player;
+
+		syncRoomPlayersFromGame();
+
+		showRoomElements();
+		updateUIPlayerList();
+		updateUIAllChat();
+		updateUIGame();
+		//renderLies(gs.room.game.playerLies[gs.player.id]);
+
+		if (room.status === RoomStatus.PLAYING) startGameUI();
+		else endGameUI();
+	});
+
+	gs.socket.on("p-joined-room", (id: string, name: string) => {
+		if (id === gs.player.id) return;
+
+		gs.room.addPlayer(new Player(id, name));
+		updateUIGame();
+		//renderLies(gs.room.game.playerLies[gs.player.id]);
+	});
+
+	gs.socket.on("p-left-room", (id: string) => {
+		gs.room.removePlayer(id);
+		updateUIGame();
+		//renderLies(gs.room.game.playerLies[gs.player.id]);
+	});
+
+	gs.socket.on("p-set-status", (id: string, status: PlayerStatus) => {
+		const player = gs.room.getPlayer(id);
+		if (!player) return;
+
+		player.status = status;
+		updateUIGame();
+		//renderLies(gs.room.game.playerLies[gs.player.id]);
+	});
+
+	gs.socket.on("started-room", (raw: SerializedGame) => {
+		gs.room.status = RoomStatus.PLAYING;
+		gs.room.game = Game.deserialize(raw);
+
+		gs.player =
+			gs.room.game.players.find(p => p.id === gs.player.id) ?? gs.player;
+
+		syncRoomPlayersFromGame();
+		startGameUI();
+	});
+
+	gs.socket.on("game-updated", (raw: SerializedGame) => {
+		gs.room.game = Game.deserialize(raw);
+
+		gs.player =
+			gs.room.game?.players.find(p => p.id === gs.player.id) ?? gs.player;
+
+		syncRoomPlayersFromGame();
+		updateUIGame();
+		//renderLies(gs.room.game.playerLies[gs.player.id]);
+	});
+
+	gs.socket.on("character-selected", (id: string, character: Person) => {
+		const player = gs.room.getPlayer(id);
+		if(!player) return;
+
+		player.character = character;
+
+		updateUIGame();
+		//renderLies(gs.room.game.playerLies[gs.player.id]);
+	});
+
+	gs.socket.on("dice-rolled", (diceroll: number) => {
+		gs.room.game.rolledDice = true;
+		createMoveOptions(diceroll);
+		renderActionButtons();
+	});
+
+	gs.socket.on("player-moved", (id: string, loc: string) => {
+		const game = gs.room.game;
+		game.moveCurrentPlayer(destringifyLocation(loc));
+		updateUIGame();
+		//renderLies(gs.room.game.playerLies[gs.player.id]);
+	});
+
+	gs.socket.on("respond-suggestion", (cardsToShow: Card[] | undefined) => {
+		if (cardsToShow)
+		{
+			renderSuggestionEvidenceHand(cardsToShow);
+		}
+
+		renderPassButton();
+		//renderLies(gs.room.game.playerLies[gs.player.id]);
+	});
+
+	gs.socket.on("made-suggestion", () => {
+		clearSuggestionButtons();
+	});
+
+	gs.socket.on("shown-card", (card: Card) => {
+		renderShownCard(card);
+	});
+
+	gs.socket.on("clear-shown-card", ()=> {
+		clearShownCard();
+	});
+
+	gs.socket.on("clear-suggestion-response", () => {
+		clearSuggestionResponses();
+		console.log(gs.room.game.playerLies);
+		console.log(gs.player.id);
+		//renderLies(gs.room.game.playerLies[gs.player.id]);
+	})
+
+	gs.socket.on("p-score-updated", (id: string, score: number) => {
+		applyScoreUpdate(id, score);
+		updateUIPlayerList();
+		updateUIGame();
+		//renderLies(gs.room.game.playerLies[gs.player.id]);
+	});
+
+	gs.socket.on("ended-room", (reason: string) => {
+		gs.room.status = RoomStatus.LOBBY;
+		gs.room.endRoom();
+
+		endGameUI();
+
+		updateUIPushChat({
+			id: "server",
+			message: reason,
+		});
+	});
+
+	gs.socket.on("p-sent-chat", (id: string, message: string) => {
+		gs.room.chat.push(id, message);
+
+		updateUIPushChat({ id, message });
+	});
+}
+
+function applyScoreUpdate(id: string, score: number): void {
+	const roomPlayer = gs.room.players.get(id);
+	if (roomPlayer) roomPlayer.score = score;
+
+	const gamePlayer = gs.room.game?.players.find(player => player.id === id);
+	if (gamePlayer) gamePlayer.score = score;
+
+	if (gs.player.id === id) gs.player.score = score;
+}
+
+function syncRoomPlayersFromGame(): void {
+	if (!gs.room.game) return;
+
+	for (const gamePlayer of gs.room.game.players) {
+		const roomPlayer = gs.room.players.get(gamePlayer.id);
+		if (!roomPlayer) continue;
+
+		roomPlayer.cardCount = gamePlayer.cardCount;
+		roomPlayer.score = gamePlayer.score;
+		roomPlayer.status = gamePlayer.status;
+		roomPlayer.index = gamePlayer.index;
+		roomPlayer.character = gamePlayer.character;
+	}
+}

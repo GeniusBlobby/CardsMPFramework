@@ -1,0 +1,15 @@
+{
+    "extends": "../tsconfig.base.json",
+    "compilerOptions": {
+        "composite": true,
+        "outDir": "../dist/public",
+        "ignoreDeprecations": "5.0",
+        "rootDir": "./src",
+        "tsBuildInfoFile": "../dist/public/.tsbuildinfo",
+        "paths": {
+            "@shared/*": ["../shared/src/*"]
+        }
+    },
+    "include": ["src"],
+    "references": [{ "path": "../shared" }]
+}

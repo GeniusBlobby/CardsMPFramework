@@ -1,0 +1,100 @@
+import type { Socket } from "socket.io-client";
+import { io } from "socket.io-client";
+import { config } from "@shared/config";
+import { Player } from "@shared/player";
+import type { gameRoom } from "@shared/gameRoom";
+import { Settings } from "./settings";
+
+export class Session {
+	socket: Socket;
+	room: gameRoom | undefined;
+	player: Player | undefined;
+	auth: string;
+	name: string;
+	settings: Settings;
+
+	constructor(id?: string, auth?: string) {
+		const storedId = globalThis.sessionStorage?.getItem("id") || undefined;
+		const storedAuth =
+			globalThis.sessionStorage?.getItem("auth") || undefined;
+		const storedName =
+			globalThis.sessionStorage?.getItem("name") || undefined;
+		const playerID = id ?? storedId;
+		const token = auth ?? storedAuth;
+		const socketUrl =
+			globalThis.location.port === String(config.clientPort)
+				? `${globalThis.location.protocol}//${globalThis.location.hostname}:${config.serverPort}`
+				: globalThis.location.origin;
+
+		this.socket =
+			playerID && token
+				? io(socketUrl, {
+						auth: {
+							playerID,
+							token,
+						},
+					})
+				: io(socketUrl);
+
+		this.room = undefined;
+		this.player = playerID ? new Player(playerID, storedName) : undefined;
+		this.auth = token || "";
+		this.name = storedName || "";
+		this.settings = new Settings();
+
+		if (this.settings.logSocket) {
+			const ignoredEvents = new Set(["ping", "pong"]);
+
+			// Log all incoming socket events (filtered)
+			this.socket.onAny((event, ...arguments_) => {
+				if (!ignoredEvents.has(event)) {
+					console.log(
+						`%c⬇ [RECEIVE] ${event}`,
+						"color: #2196F3; font-weight: bold",
+						arguments_,
+					);
+				}
+			});
+
+			// Log all outgoing socket events (filtered)
+			const originalEmit = this.socket.emit.bind(this.socket);
+			this.socket.emit = function (
+				event: string,
+				...arguments_: unknown[]
+			) {
+				if (!ignoredEvents.has(event)) {
+					console.log(
+						`%c⬆ [EMIT] ${event}`,
+						"color: #4CAF50; font-weight: bold",
+						arguments_,
+					);
+				}
+				return originalEmit(event, ...arguments_);
+			};
+		}
+	}
+
+	resetSession(): void {
+		this.room = undefined;
+		this.player = undefined;
+		this.auth = "";
+		this.name = "";
+	}
+}
+
+export function initSession() {
+	const id = globalThis.sessionStorage?.getItem("id") || undefined;
+	const auth = globalThis.sessionStorage?.getItem("auth") || undefined;
+
+	sn = new Session(id, auth);
+	gs = sn as GameSession;
+	return sn;
+}
+
+export type GameSession = Session & {
+	player: Player;
+	room: gameRoom;
+};
+
+export let sn: Session;
+export let gs: GameSession;
