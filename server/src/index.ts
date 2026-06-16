@@ -178,7 +178,7 @@ function getAllowedOrigins(): Set<string> {
 	}
 
 	return new Set([
-		"https://cardsmp.duckdns.org",
+		"https://clue.duckdns.org",
 		`http://localhost:${config.clientPort}`,
 		`http://127.0.0.1:${config.clientPort}`,
 		`http://localhost:${config.serverPort}`,

@@ -1,13 +1,14 @@
 services:
-    cardsmp:
+    cluemp:
         build:
             context: .
-        container_name: cardsmp
+        container_name: cluemp
         restart: unless-stopped
         environment:
             NODE_ENV: production
             HOST: 0.0.0.0
             PORT: 8000
+            ALLOWED_ORIGINS: https://cluemp.duckdns.org
         expose:
             - "3000"
             - "8000"

@@ -1,7 +1,7 @@
 {
-	"name": "cardsmp",
+	"name": "clue",
 	"version": "1.0.0",
-	"description": "general purpose multiplayer card game server and client",
+	"description": "multiplayer Clue server and client",
 	"main": "dist/server/index.js",
 	"type": "module",
 	"scripts": {
