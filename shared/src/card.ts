@@ -1,8 +1,8 @@
 import { Player } from "./player";
 
-export type Person = "scarlet" | "white" | "peacock" | "green" | "plum" | "mustard";
-export type Weapon = "firepoker" | "leadpipe" | "rope" | "poison" | "candelabra" | "letteropener";
-export type Room = "kitchen" | "study" | "attic" | "lounge" | "library" | "billiard" | "dining" | "conservatory" | "cellar";
+export type Person = "scarlet" | "white" | "peacock" | "green" | "plum" | "mustard" | "filler";
+export type Weapon = "firepoker" | "leadpipe" | "rope" | "poison" | "candelabra" | "letteropener" | "filler";
+export type Room = "kitchen" | "study" | "attic" | "lounge" | "library" | "billiard" | "dining" | "conservatory" | "cellar" | "filler";
 export type CardType = "person" | "weapon" | "room";
 
 export const SUSPECTS = ["Ms. Scarlet", "Mrs. White", "Mrs. Peacock", "Mr. Green", "Professor Plum", "Colonel Mustard"];
@@ -26,7 +26,8 @@ export const PersonToSuspect: Record<Person, string> = {
 	"peacock": "Mrs. Peacock",
 	"green": "Mr. Green",
 	"plum": "Professor Plum",
-	"mustard": "Colonel Mustard"
+	"mustard": "Colonel Mustard",
+	"filler": "filler"
 }
 
 export const WeaponToSmallWeapon: Record<string, Weapon> = {

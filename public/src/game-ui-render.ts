@@ -31,7 +31,8 @@ const RoomRenderLocations: Record<Room, [number, number]> = {
 	"cellar": [81, 43],
 	"attic": [81, 64],
 	"study": [75.4, 87.5],
-	"billiard": [50.5, 73.2]
+	"billiard": [50.5, 73.2],
+	"filler": [0, 0]
 }
 
 function isPlayersTurn(): boolean {

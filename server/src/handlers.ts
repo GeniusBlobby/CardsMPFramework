@@ -199,13 +199,14 @@ export function setupHandlers(socket: GameSocket): void {
 		const currentRefuter = room!.game.players.find(player => player.id === refuterId);
 		const refuter = room!.game.players[(currentRefuter!.index! + 1) % room!.game.players.length];
 
-		const validPass = socket.room?.game.isValidPass(refuterId);
+		console.log(currentRefuter!.name);
+		console.log(currentRefuter!.hand);
+		const validPass = socket.room?.game.isValidPass(currentRefuter!.id);
 
-		/*console.log(validPass);
+		console.log(validPass);
 		if (!validPass)
 		{
-			const hasLies = socket.room?.game.hasLies(refuterId);
-			console.log(hasLies);
+			const hasLies = socket.room?.game.hasLies(currentRefuter!.id);
 
 			if (!hasLies)
 			{
@@ -213,11 +214,10 @@ export function setupHandlers(socket: GameSocket): void {
 			}
 			else
 			{
-				console.log(refuterId);
-				socket.room?.game.invalidPass(refuterId);
-				emitGameSnapshot(socket.room!);
+				socket.room?.game.invalidPass(currentRefuter!.id);
+				socket.emit("invalid-pass", socket.room?.game.playerLies[currentRefuter!.id]);
 			}
-		}*/
+		}
 
 		socket.emit("clear-suggestion-response");
 

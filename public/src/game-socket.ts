@@ -17,7 +17,7 @@ import {
 	renderShownCard,
 	clearSuggestionResponses,
 	clearShownCard,
-	//renderLies
+	renderLies
 } from "./game-ui-render";
 import { updateUIAllChat, updateUIPushChat } from "./game-ui-chat";
 import { gs } from "./session";
@@ -41,7 +41,6 @@ export function initGameSocket(): void {
 		updateUIPlayerList();
 		updateUIAllChat();
 		updateUIGame();
-		//renderLies(gs.room.game.playerLies[gs.player.id]);
 
 		if (room.status === RoomStatus.PLAYING) startGameUI();
 		else endGameUI();
@@ -52,13 +51,11 @@ export function initGameSocket(): void {
 
 		gs.room.addPlayer(new Player(id, name));
 		updateUIGame();
-		//renderLies(gs.room.game.playerLies[gs.player.id]);
 	});
 
 	gs.socket.on("p-left-room", (id: string) => {
 		gs.room.removePlayer(id);
 		updateUIGame();
-		//renderLies(gs.room.game.playerLies[gs.player.id]);
 	});
 
 	gs.socket.on("p-set-status", (id: string, status: PlayerStatus) => {
@@ -67,7 +64,6 @@ export function initGameSocket(): void {
 
 		player.status = status;
 		updateUIGame();
-		//renderLies(gs.room.game.playerLies[gs.player.id]);
 	});
 
 	gs.socket.on("started-room", (raw: SerializedGame) => {
@@ -89,7 +85,7 @@ export function initGameSocket(): void {
 
 		syncRoomPlayersFromGame();
 		updateUIGame();
-		//renderLies(gs.room.game.playerLies[gs.player.id]);
+		renderLies(gs.room.game.playerLies[gs.player.id]);
 	});
 
 	gs.socket.on("character-selected", (id: string, character: Person) => {
@@ -99,7 +95,6 @@ export function initGameSocket(): void {
 		player.character = character;
 
 		updateUIGame();
-		//renderLies(gs.room.game.playerLies[gs.player.id]);
 	});
 
 	gs.socket.on("dice-rolled", (diceroll: number) => {
@@ -112,7 +107,6 @@ export function initGameSocket(): void {
 		const game = gs.room.game;
 		game.moveCurrentPlayer(destringifyLocation(loc));
 		updateUIGame();
-		//renderLies(gs.room.game.playerLies[gs.player.id]);
 	});
 
 	gs.socket.on("respond-suggestion", (cardsToShow: Card[] | undefined) => {
@@ -122,7 +116,6 @@ export function initGameSocket(): void {
 		}
 
 		renderPassButton();
-		//renderLies(gs.room.game.playerLies[gs.player.id]);
 	});
 
 	gs.socket.on("made-suggestion", () => {
@@ -133,22 +126,22 @@ export function initGameSocket(): void {
 		renderShownCard(card);
 	});
 
-	gs.socket.on("clear-shown-card", ()=> {
+	gs.socket.on("clear-shown-card", () => {
 		clearShownCard();
 	});
 
+	gs.socket.on("invalid-pass", (lies: number) => {
+		renderLies(lies);
+	})
+
 	gs.socket.on("clear-suggestion-response", () => {
 		clearSuggestionResponses();
-		console.log(gs.room.game.playerLies);
-		console.log(gs.player.id);
-		//renderLies(gs.room.game.playerLies[gs.player.id]);
 	})
 
 	gs.socket.on("p-score-updated", (id: string, score: number) => {
 		applyScoreUpdate(id, score);
 		updateUIPlayerList();
 		updateUIGame();
-		//renderLies(gs.room.game.playerLies[gs.player.id]);
 	});
 
 	gs.socket.on("ended-room", (reason: string) => {

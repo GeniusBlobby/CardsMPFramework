@@ -119,9 +119,9 @@ export class Game
     rolledDice: boolean = false;
     currentSuggesteeId: string = "";
     currentSuggestion: Suggestion = {
-        suspect: "scarlet",
-        weapon: "poison",
-        room: "library"
+        suspect: "filler",
+        weapon: "filler",
+        room: "filler"
     };
 
     constructor() {};
@@ -792,6 +792,8 @@ export class Game
             }
         }
 
+        this.currentSuggestion = s;
+
         return result;
     }
 
@@ -833,14 +835,18 @@ export class Game
 
         const refuter = this.players.find(player => player.id === passerId);
 
+        console.log(this.currentSuggestion);
         for (const card of refuter!.hand)
         {
+            console.log(card);
+            console.log("------------");
             if (this.currentSuggestion.suspect === card.value || 
                 this.currentSuggestion.weapon === card.value || 
                 this.currentSuggestion.room === card.value)
             {
                 if (!result)
                 {
+                    console.log(card);
                     result = [];
                     result.push(card);
                 }
