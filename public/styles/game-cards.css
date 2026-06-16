@@ -86,7 +86,7 @@
 	box-sizing: border-box;
 	width: 100%;
 	max-width: 100%;
-	height: var(2*--card-height + 2*10 + --card-gap);
+	height: calc(var(--card-height) + var(--card-height) + 20px + var(--card-gap));
 }
 
 .hand-card,
