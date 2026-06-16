@@ -102,7 +102,8 @@ export interface SerializedGame
     playerMoved: boolean;
     rolledDice: boolean;
     currentSuggesteeId: string;
-    currentSuggestion: Suggestion
+    currentSuggestion: Suggestion,
+    playerInGame: Record<string, boolean>;
 }
 
 export class Game
@@ -123,6 +124,7 @@ export class Game
         weapon: "filler",
         room: "filler"
     };
+    playerInGame: Record<string, boolean> = {};
 
     constructor() {};
 
@@ -141,7 +143,8 @@ export class Game
             playerMoved: this.playerMoved,
             rolledDice: this.rolledDice,
             currentSuggesteeId: this.currentSuggesteeId,
-            currentSuggestion: this.currentSuggestion
+            currentSuggestion: this.currentSuggestion,
+            playerInGame: this.playerInGame
         };
 	}
 
@@ -159,6 +162,7 @@ export class Game
         game.rolledDice = data.rolledDice;
         game.currentSuggesteeId = data.currentSuggesteeId;
         game.currentSuggestion = data.currentSuggestion;
+        game.playerInGame = data.playerInGame
 		return game;
 	}
 
@@ -180,6 +184,7 @@ export class Game
         for (const player of this.players)
         {
             this.playerLies[player.id] = 2;
+            this.playerInGame[player.id] = true;
         }
 
         this.currentPlayerIndex = 0;
@@ -882,25 +887,19 @@ export class Game
         console.log(this.playerLies[passerId]);
     }
 
-    makeAccusation(s: Suggestion): AccusationResult
+    verifyAccusation(s: Suggestion): boolean
     {
-        console.log(s);
-        console.log(this.crime);
         if (s.suspect === this.crime[0].value &&
             s.weapon === this.crime[1].value &&
             s.room === this.crime[2].value
         )
-        return {
-            accuser: this.players[this.currentPlayerIndex],
-            correct: true
-        }
+        return true;
 
         else
         {
-            return {
-                accuser: this.players[this.currentPlayerIndex],
-                correct: false
-            }
+            this.endTurn(this.players[this.currentPlayerIndex].id);
+            this.playerInGame[this.players[this.currentPlayerIndex].id] = false;
+            return false;
         }
     }
 

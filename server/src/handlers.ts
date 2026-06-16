@@ -249,24 +249,17 @@ export function setupHandlers(socket: GameSocket): void {
 			room: RoomToSmallRoom[accusedRoom]
 		}
 
-		const result = room.game.makeAccusation(suggestion);
-		if (!result) {
-			socket.emit("error", "Cannot make that accusation");
-			return;
-		}
+		const result = room.game.verifyAccusation(suggestion);
 
-		if (result.correct) {
-			applyWinScore(room, result.accuser.id);
-			io.to(room.code).emit(
-				"ended-room",
-				`${socket.player.name || "A player"} solved the case!`,
-			);
+		if (result) {
 			broadcastSystemChat(
 				room,
 				`${socket.player.name || "A player"} solved the case.`,
 			);
 			room.endRoom();
-		} else {
+		} 
+		else 
+			{
 			broadcastSystemChat(
 				room,
 				`${socket.player.name || "A player"} made a false accusation and is out of the case.`,
@@ -287,6 +280,18 @@ export function setupHandlers(socket: GameSocket): void {
 		if (!room.game.endTurn(socket.player.id)) {
 			socket.emit("error", "Cannot end turn");
 			return;
+		}
+
+		for (const player of room.game.players)
+		{
+			if (!room.game.playerInGame[player.id])
+			{
+				room.game.endTurn(player.id);
+			}
+			else
+			{
+				break;
+			}
 		}
 
 		emitGameSnapshot(room);

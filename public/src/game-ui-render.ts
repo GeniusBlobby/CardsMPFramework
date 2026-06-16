@@ -38,6 +38,7 @@ const RoomRenderLocations: Record<Room, [number, number]> = {
 function isPlayersTurn(): boolean {
     const game = gs.room?.game;
     if (!gs.player || !game) return false;
+	if (game.playerInGame[gs.player.index!] === false) return false;
     return gs.player.index === game.currentPlayerIndex;
 }
 
