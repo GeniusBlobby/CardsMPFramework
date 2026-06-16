@@ -1,4 +1,4 @@
-name: Deploy to VM
+name: Deploy ClueMP to VM
 
 on:
     push:
@@ -10,7 +10,7 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - name: SSH into VM, build Docker image, and reload
+            - name: SSH into VM, build Docker image, and reload ClueMP
               uses: appleboy/ssh-action@v1.0.3
               with:
                   host: ${{ secrets.VM_HOST }}
@@ -19,8 +19,8 @@ jobs:
                   script: |
                       set -e
 
-                      APP_DIR=/opt/clue
-                      REPO_URL=https://github.com/lualum/clue.git
+                      APP_DIR=/opt/ClueMP
+                      REPO_URL=https://github.com/GeniusBlobby/CardsMPFramework.git
 
                       if [ ! -d "$APP_DIR/.git" ]; then
                           sudo mkdir -p "$APP_DIR"
