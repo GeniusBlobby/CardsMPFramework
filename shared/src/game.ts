@@ -49,7 +49,7 @@ export function destringifyLocation(str: string): [number, number]
     return [a, b];
 }
 
-const RoomEntrances: Record<string, Room> = {
+export const RoomEntrances: Record<string, Room> = {
     "6,5": "library",
     "6,9": "lounge",
     "7,12": "lounge",
@@ -69,7 +69,7 @@ const RoomEntrances: Record<string, Room> = {
     "14,4": "billiard"
 };
 
-const RoomLocations: Record<string, [number, number]> = {
+export const RoomLocations: Record<string, [number, number]> = {
     "library": [-1, -1],
     "lounge": [-2, -2],
     "kitchen": [-3, 3],
@@ -79,6 +79,18 @@ const RoomLocations: Record<string, [number, number]> = {
     "attic": [-7, -7],
     "study": [-8, -8],
     "billiard": [-9, -9]
+}
+
+export const Rooms: Record<string, Room> = {
+    "-1,-1": "library",
+    "-2,-2": "lounge",
+    "-3,-3": "kitchen",
+    "-4,-4": "dining",
+    "-5,-5": "conservatory",
+    "-6,-6": "cellar",
+    "-7,-7": "attic",
+    "-8,-8": "study",
+    "-9,-9": "billiard"
 }
 
 export enum GamePhase
@@ -104,6 +116,7 @@ export interface SerializedGame
     currentSuggesteeId: string;
     currentSuggestion: Suggestion,
     playerInGame: Record<string, boolean>;
+    suggestionInProgress: boolean;
 }
 
 export class Game
@@ -125,6 +138,7 @@ export class Game
         room: "filler"
     };
     playerInGame: Record<string, boolean> = {};
+    suggestionInProgress: boolean = false;
 
     constructor() {};
 
@@ -144,7 +158,8 @@ export class Game
             rolledDice: this.rolledDice,
             currentSuggesteeId: this.currentSuggesteeId,
             currentSuggestion: this.currentSuggestion,
-            playerInGame: this.playerInGame
+            playerInGame: this.playerInGame,
+            suggestionInProgress: this.suggestionInProgress
         };
 	}
 
@@ -162,7 +177,8 @@ export class Game
         game.rolledDice = data.rolledDice;
         game.currentSuggesteeId = data.currentSuggesteeId;
         game.currentSuggestion = data.currentSuggestion;
-        game.playerInGame = data.playerInGame
+        game.playerInGame = data.playerInGame;
+        game.suggestionInProgress = data.suggestionInProgress;
 		return game;
 	}
 
@@ -453,6 +469,12 @@ export class Game
         this.playerMoved =  true;
     }
 
+    movePlayer(player: Player, room: Room)
+    {
+        const loc = RoomLocations[room];
+        this.playerLocations[player.id] = loc;
+    }
+
     findAvailableMoves(moves: number, startLocation: [number, number]): Set<string>
     {
         let availableMoves: Set<string> = new Set<string>();
@@ -482,7 +504,7 @@ export class Game
 
                 availableMoves.add(stringifyLocation([x, y]));
 
-                if (x-1 !== 6 || y!==5) //cutting through library wall
+                if ((x-1 !== 6 || y!==5) && (x-1 !== 16 || y !== 3)) //cutting through library wall
                 {
                     queue.push({x: x-1, y: y, dist: dist+1});
                 }
@@ -492,12 +514,15 @@ export class Game
                     queue.push({x: x, y: y+1, dist: dist+1});
                 }
 
-                if (x+1 !== 17 || y !== 3) //cutting through study wall
+                if ((x+1 !== 17 || y !== 3) && (x+1 !== 7 || y !== 5)) //cutting through study wall
                 {
                     queue.push({x: x+1, y: y, dist: dist+1});
                 }
 
-                queue.push({x: x, y: y-1, dist: dist+1});
+                if (x !== 19 || y-1 !== 18)
+                {
+                    queue.push({x: x, y: y-1, dist: dist+1});
+                } 
             }
         }
 
@@ -768,6 +793,8 @@ export class Game
     //returns the cards which can be showed of the next person
     makeSuggestion(id: string, s: Suggestion): Card[] | undefined
     {
+        this.suggestionInProgress = true;
+
         let result: Card[] | undefined = undefined;
 
         const suggestee = this.players.find(player => player.id === id);
@@ -806,6 +833,7 @@ export class Game
     passSuggestion(id: string): Card[] | undefined | number {
         if (this.currentSuggesteeId === id)
         {
+            this.suggestionInProgress = false;
             return 0;
         }
 
@@ -897,8 +925,8 @@ export class Game
 
         else
         {
-            this.endTurn(this.players[this.currentPlayerIndex].id);
             this.playerInGame[this.players[this.currentPlayerIndex].id] = false;
+            this.endTurn(this.players[this.currentPlayerIndex].id);
             return false;
         }
     }
@@ -918,6 +946,11 @@ export class Game
         return this.rolledDice;
     }
 
+    clearSuggestion(): void
+    {
+        this.suggestionInProgress = false;
+    }
+
     endTurn(id: string): number | undefined
     {
         const p = this.players.find(player => player.id === id);
@@ -932,7 +965,27 @@ export class Game
         this.playerEnteredRoom = false;
         this.playerMoved = false;
         this.rolledDice = false;
+        this.suggestionInProgress = false;
 
         return 1;
+    }
+
+    endTurnUntilValidPlayer(): number
+    {
+        let i = this.currentPlayerIndex;
+
+        while (i % this.players.length !== this.currentPlayerIndex - 1)
+        {
+            if (this.playerInGame[this.players[i].id])
+            {
+                return 1;
+            }
+            else
+            {
+                this.endTurn(this.players[i].id);
+            }
+        }
+
+        return 0;
     }
 }

@@ -1,6 +1,6 @@
 import { Player, type PlayerStatus } from "@shared/player";
 import type { SerializedGame } from "@shared/game";
-import { destringifyLocation, Game } from "@shared/game";
+import { destringifyLocation, Game, GamePhase, Rooms } from "@shared/game";
 import { Person, Card } from "@shared/card";
 import { gameRoom, RoomStatus, type SerializedRoom } from "@shared/gameRoom";
 import {
@@ -17,7 +17,9 @@ import {
 	renderShownCard,
 	clearSuggestionResponses,
 	clearShownCard,
-	renderLies
+	renderLies,
+	renderCharacterIcons,
+	clearMoveOptions
 } from "./game-ui-render";
 import { updateUIAllChat, updateUIPushChat } from "./game-ui-chat";
 import { gs } from "./session";
@@ -103,11 +105,25 @@ export function initGameSocket(): void {
 		renderActionButtons();
 	});
 
-	gs.socket.on("player-moved", (id: string, loc: string) => {
+	gs.socket.on("player-moved", (suspectId: string | undefined, loc: string) => {
 		const game = gs.room.game;
 		game.moveCurrentPlayer(destringifyLocation(loc));
-		updateUIGame();
+
+		if (suspectId)
+		{
+			game.movePlayer(game.players.find(player => player.id === suspectId)!, Rooms[loc]);
+		}
+
+		if (gs.room.game.phase === GamePhase.INPROGRESS)
+		{
+			renderCharacterIcons();
+			clearMoveOptions();
+		}
 	});
+
+	gs.socket.on("entered-room", () => {
+		renderActionButtons();
+	})
 
 	gs.socket.on("respond-suggestion", (cardsToShow: Card[] | undefined) => {
 		if (cardsToShow)

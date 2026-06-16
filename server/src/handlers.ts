@@ -1,7 +1,7 @@
 import type { Server } from "socket.io";
 import type { Suggestion, SuggestionResult, Person, Card, Weapon, Room} from "@shared/card";
 import { SUSPECTS, SuspectToPerson, WeaponToSmallWeapon, RoomToSmallRoom } from "@shared/card";
-import { Game, SerializedGame, GamePhase, stringifyLocation, destringifyLocation } from "@shared/game";
+import { Game, SerializedGame, GamePhase, stringifyLocation, destringifyLocation, RoomLocations, RoomEntrances } from "@shared/game";
 import { PlayerStatus, Player } from "@shared/player";
 import {
 	MAX_ROOM_PLAYERS,
@@ -133,7 +133,13 @@ export function setupHandlers(socket: GameSocket): void {
 		const roomPlayer = socket.room?.players.get(socket.player.id);
 
 		socket.room?.game.moveCurrentPlayer(destringifyLocation(loc));
-		io.to(socket.room.code).emit("player-moved", roomPlayer!.id, loc);
+
+		io.to(socket.room.code).emit("player-moved", undefined, loc);
+
+		if (RoomEntrances[loc])
+		{
+			socket.emit("entered-room");
+		}
 	})
 
 	socket.on("make-suggestion", (suspect: string, weapon: string) => {
@@ -163,6 +169,16 @@ export function setupHandlers(socket: GameSocket): void {
 		console.log(suggestion);
 		const cardsToShow = room.game.makeSuggestion(socket.player.id, suggestion);
 
+		const playerToMove = room.game.players.find(player => player.character === realSuspect);
+
+		if (playerToMove)
+		{
+			room.game.movePlayer(playerToMove, realRoom);
+			console.log("emitting socket");
+			io.to(socket.room!.code).emit("player-moved", playerToMove.id, stringifyLocation(RoomLocations[realRoom]));
+			//socket.emit("player-moved", playerToMove.id, );
+		}
+
 		const suggestee = room.game.players.find(player => player.id === socket.player.id);
 		const refuter = room.game.players[(suggestee!.index! + 1) % room.game.players.length];
 
@@ -179,6 +195,8 @@ export function setupHandlers(socket: GameSocket): void {
 
 	socket.on("showed-card", (shownCard: Card, shower: Player) => {
 		socket.emit("clear-suggestion-response");
+
+		socket.room?.game.clearSuggestion();
 
 		const suggesteeId = socket.room?.game.currentSuggesteeId;
 		const suggestee = socket.room?.game.players.find(player => player.id === suggesteeId);
@@ -240,8 +258,11 @@ export function setupHandlers(socket: GameSocket): void {
 
 	socket.on("make-accusation", (accusedSuspect: Person, acccusedWeapon: Weapon, accusedRoom: Room) => {
 		if (!canTakeTurn(socket)) return;
+
 		const room = socket.room;
 		if (!room) return;
+
+		if (room.game.suggestionInProgress) return;
 
 		const suggestion: Suggestion = {
 			suspect: SuspectToPerson[accusedSuspect],
@@ -257,7 +278,7 @@ export function setupHandlers(socket: GameSocket): void {
 				`${socket.player.name || "A player"} solved the case.`,
 			);
 			room.endRoom();
-		} 
+		}
 		else 
 			{
 			broadcastSystemChat(
@@ -277,21 +298,23 @@ export function setupHandlers(socket: GameSocket): void {
 		const room = socket.room;
 		if (!room) return;
 
+		if (room.game.suggestionInProgress) return;
+
 		if (!room.game.endTurn(socket.player.id)) {
 			socket.emit("error", "Cannot end turn");
 			return;
 		}
 
-		for (const player of room.game.players)
+		if(room.game.endTurnUntilValidPlayer())
 		{
-			if (!room.game.playerInGame[player.id])
-			{
-				room.game.endTurn(player.id);
-			}
-			else
-			{
-				break;
-			}
+			emitGameSnapshot(room);
+		}
+		else
+		{
+			broadcastSystemChat(
+				room,
+				`${socket.player.name || "A player"} wins because everyone else is bad.`,
+			);
 		}
 
 		emitGameSnapshot(room);

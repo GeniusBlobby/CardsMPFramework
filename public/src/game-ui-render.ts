@@ -444,7 +444,6 @@ export function renderActionButtons(): void {
 		controls.append(rollBtn);
 		rollContainer?.append(controls);
 	}
-
 	
 	if (game.enteredRoom(player!))   //Generate buttons and selectors for suggestions
 	{
@@ -606,7 +605,7 @@ function updateGameInfoUI(): void {
 	`;
 }
 
-function renderCharacterIcons(): void {
+export function renderCharacterIcons(): void {
     const game = gs.room.game;
     const board = document.getElementById("piece-layer");
 
