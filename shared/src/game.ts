@@ -72,7 +72,7 @@ export const RoomEntrances: Record<string, Room> = {
 export const RoomLocations: Record<string, [number, number]> = {
     "library": [-1, -1],
     "lounge": [-2, -2],
-    "kitchen": [-3, 3],
+    "kitchen": [-3, -3],
     "dining": [-4, -4],
     "conservatory": [-5, -5],
     "cellar": [-6, -6],
@@ -514,12 +514,12 @@ export class Game
                     queue.push({x: x, y: y+1, dist: dist+1});
                 }
 
-                if ((x+1 !== 17 || y !== 3) && (x+1 !== 7 || y !== 5)) //cutting through study wall
+                if ((x+1 !== 17 || y !== 3) && (x+1 !== 7 || y !== 5)) //cutting through study wall and library exit
                 {
                     queue.push({x: x+1, y: y, dist: dist+1});
                 }
 
-                if (x !== 19 || y-1 !== 18)
+                if (x !== 19 || y-1 !== 18) //cutting conservatory exit
                 {
                     queue.push({x: x, y: y-1, dist: dist+1});
                 } 
@@ -660,6 +660,10 @@ export class Game
                 availableMoves.add(str);
             }
             for (const str of tempMoves2)
+            {
+                availableMoves.add(str);
+            }
+            for (const str of tempMoves3)
             {
                 availableMoves.add(str);
             }
@@ -868,18 +872,14 @@ export class Game
 
         const refuter = this.players.find(player => player.id === passerId);
 
-        console.log(this.currentSuggestion);
         for (const card of refuter!.hand)
         {
-            console.log(card);
-            console.log("------------");
             if (this.currentSuggestion.suspect === card.value || 
                 this.currentSuggestion.weapon === card.value || 
                 this.currentSuggestion.room === card.value)
             {
                 if (!result)
                 {
-                    console.log(card);
                     result = [];
                     result.push(card);
                 }
@@ -912,7 +912,6 @@ export class Game
     invalidPass(passerId: string): void
     {
         this.playerLies[passerId]--;
-        console.log(this.playerLies[passerId]);
     }
 
     verifyAccusation(s: Suggestion): boolean

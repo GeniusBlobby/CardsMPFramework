@@ -1,5 +1,6 @@
 import type { Server } from "socket.io";
 import type { Suggestion, SuggestionResult, Person, Card, Weapon, Room} from "@shared/card";
+import { PersonToSuspect, SmallWeaponToWeapon, SmallRoomToRoom } from "@shared/card";
 import { SUSPECTS, SuspectToPerson, WeaponToSmallWeapon, RoomToSmallRoom } from "@shared/card";
 import { Game, SerializedGame, GamePhase, stringifyLocation, destringifyLocation, RoomLocations, RoomEntrances } from "@shared/game";
 import { PlayerStatus, Player } from "@shared/player";
@@ -103,7 +104,7 @@ export function setupHandlers(socket: GameSocket): void {
 		{
 			if(player.character === character && id !== roomPlayer!.id)
 			{
-				broadcastSystemChat(socket.room, player.name + " already selected " + selectedCharacter)
+				broadcastSystemChat(socket.room, player.name + " already selected " + PersonToSuspect[selectedCharacter as Person])
 				return;
 			}
 		}
@@ -111,7 +112,7 @@ export function setupHandlers(socket: GameSocket): void {
 		roomPlayer!.character = character;
 
 		io.to(socket.room.code).emit("character-selected", roomPlayer!.id, character);
-		broadcastSystemChat(socket.room, roomPlayer!.name + " selected " + roomPlayer!.character);
+		broadcastSystemChat(socket.room, roomPlayer!.name + " selected " + PersonToSuspect[roomPlayer!.character]);
 	})
 
 	socket.on("roll-dice", () =>{
@@ -136,7 +137,7 @@ export function setupHandlers(socket: GameSocket): void {
 
 		io.to(socket.room.code).emit("player-moved", undefined, loc);
 
-		if (RoomEntrances[loc])
+		if (RoomEntrances[loc] || destringifyLocation(loc)[0] < 0)
 		{
 			socket.emit("entered-room");
 		}
@@ -166,7 +167,6 @@ export function setupHandlers(socket: GameSocket): void {
 			room: realRoom
 		}
 
-		console.log(suggestion);
 		const cardsToShow = room.game.makeSuggestion(socket.player.id, suggestion);
 
 		const playerToMove = room.game.players.find(player => player.character === realSuspect);
@@ -174,7 +174,6 @@ export function setupHandlers(socket: GameSocket): void {
 		if (playerToMove)
 		{
 			room.game.movePlayer(playerToMove, realRoom);
-			console.log("emitting socket");
 			io.to(socket.room!.code).emit("player-moved", playerToMove.id, stringifyLocation(RoomLocations[realRoom]));
 			//socket.emit("player-moved", playerToMove.id, );
 		}
@@ -187,7 +186,7 @@ export function setupHandlers(socket: GameSocket): void {
 			) as GameSocket | undefined;
 		
 		broadcastSystemChat(socket.room!, suggestee!.name + " suggested " 
-			+ suggestion.suspect + " with the " + suggestion.weapon + " in the " + suggestion.room);
+			+ PersonToSuspect[suggestion.suspect] + " with the " + SmallWeaponToWeapon[suggestion.weapon] + " in the " + SmallRoomToRoom[suggestion.room]);
 
 		socketRefuter?.emit("respond-suggestion", cardsToShow);
 		socket.emit("made-suggestion");
@@ -217,11 +216,8 @@ export function setupHandlers(socket: GameSocket): void {
 		const currentRefuter = room!.game.players.find(player => player.id === refuterId);
 		const refuter = room!.game.players[(currentRefuter!.index! + 1) % room!.game.players.length];
 
-		console.log(currentRefuter!.name);
-		console.log(currentRefuter!.hand);
 		const validPass = socket.room?.game.isValidPass(currentRefuter!.id);
 
-		console.log(validPass);
 		if (!validPass)
 		{
 			const hasLies = socket.room?.game.hasLies(currentRefuter!.id);

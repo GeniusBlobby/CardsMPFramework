@@ -350,7 +350,6 @@ export function clearSuggestionResponses(): void {
 
 export function renderShownCard(card: Card): void {
 	const container = document.querySelector("#shown-cards");
-	console.log(container);
 	container?.append(createSuggestionCard(card));
 }
 

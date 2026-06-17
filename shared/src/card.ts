@@ -39,6 +39,16 @@ export const WeaponToSmallWeapon: Record<string, Weapon> = {
 	"Letter Opener": "letteropener"
 }
 
+export const SmallWeaponToWeapon: Record<Weapon, string> = {
+	"firepoker": "Fire Poker",
+	"leadpipe": "Lead Pipe",
+	"rope": "Rope",
+	"poison": "Poison",
+	"candelabra": "Candelabra",
+	"letteropener": "Letter Opener",
+	"filler": "filler"
+}
+
 export const RoomToSmallRoom: Record<string, Room> = {
 	"Kitchen": "kitchen",
 	"Study": "study",
@@ -49,6 +59,19 @@ export const RoomToSmallRoom: Record<string, Room> = {
 	"Dining Room": "dining", 
 	"Conservatory": "conservatory", 
 	"Wine Cellar": "cellar"
+}
+
+export const SmallRoomToRoom: Record<Room, string> = {
+	"kitchen": "Kitchen",
+	"study": "Study",
+	"attic": "Attic",
+	"lounge": "Lounge",
+	"library": "Library",
+	"billiard": "Billiard Room",
+	"dining": "Dining Room",
+	"conservatory": "Conservatory",
+	"cellar": "Wine Cellar",
+	"filler": "filler"
 }
 
 export type Card = 

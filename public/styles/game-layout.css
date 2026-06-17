@@ -94,8 +94,12 @@
 	overflow:hidden;
 }
 
+.move-button {
+	background-color:grey;
+}
+
 .move-button:hover {
-	color:aqua;
+	background-color:aqua;
 	opacity: 1;
 }
 
