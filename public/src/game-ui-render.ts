@@ -35,6 +35,8 @@ const RoomRenderLocations: Record<Room, [number, number]> = {
 	"filler": [0, 0]
 }
 
+const ROOM_CHARACTER_ICON_SPACING_PX = 26;
+
 function isPlayersTurn(): boolean {
     const game = gs.room?.game;
     if (!gs.player || !game) return false;
@@ -605,40 +607,67 @@ function updateGameInfoUI(): void {
 }
 
 export function renderCharacterIcons(): void {
-    const game = gs.room.game;
-    const board = document.getElementById("piece-layer");
+	const game = gs.room.game;
+	const board = document.getElementById("piece-layer");
 
-    if (!board || !game) {
-        return;
-    }
+	if (!board || !game) {
+		return;
+	}
 
-    // Remove old icons
-    board.querySelectorAll(".character-icon").forEach(icon => icon.remove());
+	board.querySelectorAll(".character-icon").forEach(icon => icon.remove());
 
-    for (const id of Object.keys(game.playerLocations)) {
-		const [x, y] = game.playerLocations[id];
-		const player = game.players.find(player => player.id === id);
-        const icon = document.createElement("div");
-        icon.className = "character-icon";
+	const locatedPlayers = Object.keys(game.playerLocations)
+		.map((id) => game.players.find(player => player.id === id))
+		.filter((player): player is Player => Boolean(player))
+		.sort(
+			(a, b) =>
+				(a.index ?? Number.MAX_SAFE_INTEGER) -
+				(b.index ?? Number.MAX_SAFE_INTEGER),
+		);
 
-		icon.style.position = `absolute`;
+	const roomIconCounts = new Map<Room, number>();
+	for (const player of locatedPlayers) {
+		if (!game.checkInRoom(player)) continue;
+		const room = game.getRoom(player);
+		roomIconCounts.set(room, (roomIconCounts.get(room) ?? 0) + 1);
+	}
 
-		if(game.checkInRoom(player!))
-		{
-			const room = game.getRoom(player!);
+	const roomIconIndexes = new Map<Room, number>();
+	for (const player of locatedPlayers) {
+		const location = game.playerLocations[player.id];
+		if (!location) continue;
+
+		const [x, y] = location;
+		const icon = document.createElement("div");
+		icon.className = "character-icon";
+
+		icon.style.setProperty("--character-icon-room-offset", "0px");
+
+		if (game.checkInRoom(player)) {
+			const room = game.getRoom(player);
+			const roomIconIndex = roomIconIndexes.get(room) ?? 0;
+			const roomIconCount = roomIconCounts.get(room) ?? 1;
+			const roomIconOffset =
+				(roomIconIndex - (roomIconCount - 1) / 2) *
+				ROOM_CHARACTER_ICON_SPACING_PX;
+
+			roomIconIndexes.set(room, roomIconIndex + 1);
+
 			icon.style.left = `${RoomRenderLocations[room][0]}%`;
-			icon.style.top = `${RoomRenderLocations[room][1]}%`
-		}
-		else
-		{
+			icon.style.top = `${RoomRenderLocations[room][1]}%`;
+			icon.style.setProperty(
+				"--character-icon-room-offset",
+				`${roomIconOffset}px`,
+			);
+		} else {
 			icon.style.left = `${8.9 + x * 3.6}%`; //tuned 8.9 and 3.6
-        	icon.style.top = `${92.6 - y * 3.6}%`; //tuned 92.6 and 3.6
+			icon.style.top = `${92.6 - y * 3.6}%`; //tuned 92.6 and 3.6
 		}
-        icon.style.backgroundColor =
-            characterColors[player!.character!] ?? "black";
+		icon.style.backgroundColor =
+			characterColors[player.character!] ?? "black";
 
-        board.appendChild(icon);
-    }
+		board.appendChild(icon);
+	}
 }
 
 export function startGameUI(): void {
