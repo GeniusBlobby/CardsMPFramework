@@ -434,7 +434,6 @@ export function renderActionButtons(): void {
 
 	if (!gs.room.game.playerInGame[gs.player.id]) return;
 
-	
 	if (!game.rolled(player!))       //Generate buttons for rolling the dice
 	{
 		const controls = document.createElement("div");

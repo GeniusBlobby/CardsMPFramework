@@ -925,7 +925,7 @@ export class Game
         else
         {
             this.playerInGame[this.players[this.currentPlayerIndex].id] = false;
-            this.endTurn(this.players[this.currentPlayerIndex].id);
+            this.endTurnUntilValidPlayer();
             return false;
         }
     }
@@ -971,10 +971,16 @@ export class Game
 
     endTurnUntilValidPlayer(): number
     {
-        let i = this.currentPlayerIndex;
+        console.log(this);
+        let i = this.currentPlayerIndex + 1;
+        const currentCurrentPlayerIndex = this.currentPlayerIndex;
+        i = i % this.players.length;
 
-        while (i % this.players.length !== this.currentPlayerIndex)
+        this.endTurn(this.players[this.currentPlayerIndex].id);
+
+        while (i % this.players.length !== currentCurrentPlayerIndex)
         {
+            console.log(i);
             if (this.playerInGame[this.players[i].id])
             {
                 return 1;
@@ -983,6 +989,7 @@ export class Game
             {
                 this.endTurn(this.players[i].id);
                 i++;
+                i = i % this.players.length;
             }
         }
 

@@ -294,11 +294,6 @@ export function setupHandlers(socket: GameSocket): void {
 
 		if (room.game.suggestionInProgress) return;
 
-		if (!room.game.endTurn(socket.player.id)) {
-			socket.emit("error", "Cannot end turn");
-			return;
-		}
-
 		if(room.game.endTurnUntilValidPlayer())
 		{
 			emitGameSnapshot(room);
