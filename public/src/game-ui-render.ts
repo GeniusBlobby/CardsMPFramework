@@ -408,7 +408,7 @@ export function renderActionButtons(): void {
 		else
 		{
             const resetBtn = makeBtn("Start Case", "", () =>
-                gs.socket.emit("reset-room"),
+                gs.socket.emit("play-again"),
             );
             container.append(resetBtn);
         }
