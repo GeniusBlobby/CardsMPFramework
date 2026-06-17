@@ -578,6 +578,11 @@ export function renderWinScreen(winnerName: string): void {
 	winArea?.append(playAgainBtn);
 }
 
+export function clearWinArea(): void {
+	const winArea = document.getElementById("win-area");
+	winArea!.innerHTML = "";
+}
+
 export function clearMoveOptions(): void {
 	const board = document.getElementById("ui-layer");
 	board!.querySelectorAll(".move-button-container").forEach(icon => icon.remove());

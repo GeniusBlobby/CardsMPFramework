@@ -20,7 +20,8 @@ import {
 	renderLies,
 	renderCharacterIcons,
 	clearMoveOptions,
-	renderWinScreen
+	renderWinScreen,
+	clearWinArea
 } from "./game-ui-render";
 import { updateUIAllChat, updateUIPushChat } from "./game-ui-chat";
 import { gs } from "./session";
@@ -163,6 +164,20 @@ export function initGameSocket(): void {
 	gs.socket.on("p-score-updated", (id: string, score: number) => {
 		applyScoreUpdate(id, score);
 		updateUIPlayerList();
+	});
+
+	gs.socket.on("reset-room", (room: SerializedRoom) => {
+		gs.room = gameRoom.deserialize(room);
+		gs.room.status = RoomStatus.LOBBY;
+		
+		gs.player = gs.room.players.get(gs.player.id)!;
+
+		syncRoomPlayersFromGame();
+
+		clearWinArea();
+		updateUIPlayerList();
+		updateUIGame();
+
 	});
 
 	gs.socket.on("ended-room", (reason: string) => {

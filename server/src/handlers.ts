@@ -274,7 +274,7 @@ export function setupHandlers(socket: GameSocket): void {
 
 			room.game.phase = GamePhase.FINISHED;
 
-			socket.emit("player-won", socket.player.id);
+			io.to(room.code).emit("player-won", socket.player.id);
 			applyWinScore(room, socket.player.id);
 			return;
 		}
@@ -313,6 +313,22 @@ export function setupHandlers(socket: GameSocket): void {
 		}
 
 		//emitGameSnapshot(room);
+	});
+
+	socket.on("play-again", () => {
+		const room = socket.room;
+		if (!room) return;
+
+		for (const player of room.players.values()) {
+			player.status = PlayerStatus.NOT_READY;
+			player.character = undefined;
+			player.hand = [];
+		}
+
+		room.game = new Game();
+		room.status = RoomStatus.LOBBY;
+
+		io.to(room.code).emit("reset-room", room.serialize());
 	});
 
 	socket.on("send-chat", (rawMessage: string) => {
@@ -392,12 +408,9 @@ function emitGameSnapshot(room: gameRoom): void {
 }
 
 function applyWinScore(room: gameRoom, winnerId: string): void {
-	for (const player of room.players.values()) {
-		if (player.id === winnerId) player.score += 1;
-		const gamePlayer = room.game.players.find((p) => p.id === player.id);
-		if (gamePlayer) gamePlayer.score = player.score;
-		io.to(room.code).emit("p-score-updated", player.id, player.score);
-	}
+	const winner = room.players.get(winnerId);
+	if (winner) winner.score += 1;
+	io.to(room.code).emit("p-score-updated", winner!.id, winner!.score);
 }
 
 function emitStartedRoom(room: gameRoom): void {
