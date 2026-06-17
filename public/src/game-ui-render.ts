@@ -415,7 +415,7 @@ export function renderActionButtons(): void {
         return;
     }
 
-	if (container) container.remove();
+	if (container) container.innerHTML = "";
 
 	const accuseContainer = document.querySelector("#accusation");
 	accuseContainer!.innerHTML = "";

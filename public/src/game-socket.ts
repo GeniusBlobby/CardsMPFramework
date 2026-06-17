@@ -180,6 +180,8 @@ export function initGameSocket(): void {
 
 		console.log("updating action buttons");
 		renderActionButtons();
+
+		console.log("finished resetting room");
 	});
 
 	gs.socket.on("ended-room", (reason: string) => {
