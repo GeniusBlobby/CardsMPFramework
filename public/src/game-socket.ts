@@ -172,9 +172,14 @@ export function initGameSocket(): void {
 		
 		gs.player = gs.room.players.get(gs.player.id)!;
 
+		console.log("clearing win area");
 		clearWinArea();
+
+		console.log("updating players UI");
 		updateUIPlayerList();
-		updateUIGame();
+
+		console.log("updating action buttons");
+		renderActionButtons();
 	});
 
 	gs.socket.on("ended-room", (reason: string) => {
