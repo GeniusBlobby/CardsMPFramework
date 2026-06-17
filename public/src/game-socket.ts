@@ -172,12 +172,9 @@ export function initGameSocket(): void {
 		
 		gs.player = gs.room.players.get(gs.player.id)!;
 
-		syncRoomPlayersFromGame();
-
 		clearWinArea();
 		updateUIPlayerList();
 		updateUIGame();
-
 	});
 
 	gs.socket.on("ended-room", (reason: string) => {
