@@ -21,7 +21,9 @@ import {
 	renderCharacterIcons,
 	clearMoveOptions,
 	renderWinScreen,
-	clearWinArea
+	clearWinArea,
+	renderEvidenceHand,
+	renderTurnBanner
 } from "./game-ui-render";
 import { updateUIAllChat, updateUIPushChat } from "./game-ui-chat";
 import { gs } from "./session";
@@ -172,16 +174,11 @@ export function initGameSocket(): void {
 		
 		gs.player = gs.room.players.get(gs.player.id)!;
 
-		console.log("clearing win area");
 		clearWinArea();
-
-		console.log("updating players UI");
+		renderEvidenceHand();
+		renderTurnBanner();
 		updateUIPlayerList();
-
-		console.log("updating action buttons");
 		renderActionButtons();
-
-		console.log("finished resetting room");
 	});
 
 	gs.socket.on("ended-room", (reason: string) => {

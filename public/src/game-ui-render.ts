@@ -184,7 +184,7 @@ function getNameplatePositionClass(relativeIndex: number): string {
 	return "nameplate-top";
 }
 
-function renderTurnBanner(): void {
+export function renderTurnBanner(): void {
     const banner = document.querySelector("#turn-banner") as HTMLElement;
     if (!banner) return;
 
@@ -193,6 +193,11 @@ function renderTurnBanner(): void {
         banner.style.display = "none";
         return;
     }
+
+	if (game.phase !== GamePhase.INPROGRESS) {
+		banner.style.display = "none";
+		return;
+	}
 
     const currentName = game.players[game.currentPlayerIndex]?.name || "Unknown";
     const isYou = game.currentPlayerIndex === gs.player.index;
