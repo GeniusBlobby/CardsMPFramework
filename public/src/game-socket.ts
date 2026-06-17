@@ -19,7 +19,8 @@ import {
 	clearShownCard,
 	renderLies,
 	renderCharacterIcons,
-	clearMoveOptions
+	clearMoveOptions,
+	renderWinScreen
 } from "./game-ui-render";
 import { updateUIAllChat, updateUIPushChat } from "./game-ui-chat";
 import { gs } from "./session";
@@ -154,10 +155,14 @@ export function initGameSocket(): void {
 		clearSuggestionResponses();
 	})
 
+	gs.socket.on("player-won", (winnerId: string) => {
+		const winner = gs.room.players.get(winnerId);
+		renderWinScreen(winner!.name);
+	})
+
 	gs.socket.on("p-score-updated", (id: string, score: number) => {
 		applyScoreUpdate(id, score);
 		updateUIPlayerList();
-		updateUIGame();
 	});
 
 	gs.socket.on("ended-room", (reason: string) => {

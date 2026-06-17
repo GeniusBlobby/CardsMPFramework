@@ -271,7 +271,11 @@ export function setupHandlers(socket: GameSocket): void {
 				room,
 				`${socket.player.name || "A player"} solved the case.`,
 			);
-			room.endRoom();
+
+			room.game.phase = GamePhase.FINISHED;
+			applyWinScore(room, socket.player.id);
+			socket.emit("player-won", socket.player.id);
+			return;
 		}
 		else 
 			{

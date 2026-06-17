@@ -96,7 +96,6 @@ export const Rooms: Record<string, Room> = {
 export enum GamePhase
 {
     RESET = "reset",
-    READYTOGO = "ready",
     INPROGRESS = "inprogress",
     FINISHED = "finished"
 }

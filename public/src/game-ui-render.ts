@@ -101,10 +101,7 @@ export function updateUIPlayerList(): void {
 
 		const isYou = player.id === gs.player.id;
 		const character = player.character;
-		const status =
-			player.status === PlayerStatus.ELIMINATED
-				? "Out"
-				: player.status === PlayerStatus.DISCONNECTED
+		const status = player.status === PlayerStatus.DISCONNECTED
 					? "Away"
 					: `${player.score ?? 0} solved`;
 
@@ -542,6 +539,43 @@ export function createMoveOptions(diceroll: number): void {
 		}
 		board?.append(moveBtnContainer);
 	}
+}
+
+export function renderWinScreen(winnerName: string): void {
+	//clear all other elements
+	const passBtn = document.getElementById("pass-button");
+	passBtn!.innerHTML = "";
+	const diceRoll = document.getElementById("dice-roll");
+	diceRoll!.innerHTML = "";
+	const suggestions = document.getElementById("suggestions");
+	suggestions!.innerHTML = "";
+	const shownCards = document.getElementById("shown-cards");
+	shownCards!.innerHTML = "";
+	const accusation = document.getElementById("accusation");
+	accusation!.innerHTML = "";
+	const endTurn = document.getElementById("end-turn");
+	endTurn!.innerHTML = "";
+	const lies = document.getElementById("lies");
+	lies!.innerHTML = "";
+	const winArea = document.getElementById("win-area");
+	winArea!.innerHTML = "";
+
+	const winMessage = document.createElement("div");
+	winMessage.className = "win-message";
+	winMessage.textContent = `${winnerName} solved the case!`;
+	winArea?.append(winMessage);
+
+	const crimeCardsContainer = document.createElement("div");
+	crimeCardsContainer.id = "crime-cards-container";
+	for (const card of gs.room.game.crime) {
+		crimeCardsContainer.append(createSuggestionCard(card));
+	}
+	winArea?.append(crimeCardsContainer);
+
+	const playAgainBtn = makeBtn("Play Again", "", () => {
+		gs.socket.emit("reset-room");
+	});
+	winArea?.append(playAgainBtn);
 }
 
 export function clearMoveOptions(): void {
