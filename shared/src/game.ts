@@ -973,7 +973,7 @@ export class Game
     {
         let i = this.currentPlayerIndex;
 
-        while (i % this.players.length !== this.currentPlayerIndex - 1)
+        while (i % this.players.length !== this.currentPlayerIndex)
         {
             if (this.playerInGame[this.players[i].id])
             {
@@ -982,6 +982,7 @@ export class Game
             else
             {
                 this.endTurn(this.players[i].id);
+                i++;
             }
         }
 

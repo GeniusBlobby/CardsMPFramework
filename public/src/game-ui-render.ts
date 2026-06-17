@@ -430,6 +430,8 @@ export function renderActionButtons(): void {
     // Only show in-game controls if it's your turn
     if (!isPlayersTurn()) return;
 
+	if (!gs.room.game.playerInGame[gs.player.id]) return;
+
 	
 	if (!game.rolled(player!))       //Generate buttons for rolling the dice
 	{

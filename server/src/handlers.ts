@@ -210,8 +210,6 @@ export function setupHandlers(socket: GameSocket): void {
 	});
 
 	socket.on("suggestion-pass", (refuterId: string) => {
-		
-
 		const room = socket.room;
 		const currentRefuter = room!.game.players.find(player => player.id === refuterId);
 		const refuter = room!.game.players[(currentRefuter!.index! + 1) % room!.game.players.length];
@@ -311,9 +309,10 @@ export function setupHandlers(socket: GameSocket): void {
 				room,
 				`${socket.player.name || "A player"} wins because everyone else is bad.`,
 			);
+			return;
 		}
 
-		emitGameSnapshot(room);
+		//emitGameSnapshot(room);
 	});
 
 	socket.on("send-chat", (rawMessage: string) => {
