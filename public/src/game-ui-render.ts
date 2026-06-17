@@ -408,7 +408,7 @@ export function renderActionButtons(): void {
 		else
 		{
             const resetBtn = makeBtn("Start Case", "", () =>
-                gs.socket.emit("play-again"),
+                gs.socket.emit("reset-room"),
             );
             container.append(resetBtn);
         }
@@ -573,7 +573,7 @@ export function renderWinScreen(winnerName: string): void {
 	winArea?.append(crimeCardsContainer);
 
 	const playAgainBtn = makeBtn("Play Again", "", () => {
-		gs.socket.emit("reset-room");
+		gs.socket.emit("play-again");
 	});
 	winArea?.append(playAgainBtn);
 }
