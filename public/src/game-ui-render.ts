@@ -202,6 +202,20 @@ export function renderTurnBanner(): void {
     const currentName = game.players[game.currentPlayerIndex]?.name || "Unknown";
     const isYou = game.currentPlayerIndex === gs.player.index;
 
+	if (!game.suggestionInProgress)
+	{
+		banner.textContent = isYou ? "Your turn to investigate." : `${currentName}'s turn to investigate.`;
+	}
+	else
+	{
+		const isYouResponder = game.currentSuggesteeId === gs.player.id;
+		if (isYouResponder) banner.textContent = "Your turn to respond";
+		else
+		{
+			const responder = game.players.find(p => p.id === game.currentRefuterId);
+			banner.textContent = `${responder!.name}'s turn to respond`;
+		}
+	}
     banner.textContent = isYou
         ? "Your turn to investigate."
         : `${currentName}'s turn to investigate.`;

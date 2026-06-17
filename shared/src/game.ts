@@ -113,6 +113,7 @@ export interface SerializedGame
     playerMoved: boolean;
     rolledDice: boolean;
     currentSuggesteeId: string;
+    currentRefuterId: string;
     currentSuggestion: Suggestion,
     playerInGame: Record<string, boolean>;
     suggestionInProgress: boolean;
@@ -131,6 +132,7 @@ export class Game
     playerMoved: boolean = false;
     rolledDice: boolean = false;
     currentSuggesteeId: string = "";
+    currentRefuterId: string = "";
     currentSuggestion: Suggestion = {
         suspect: "filler",
         weapon: "filler",
@@ -156,6 +158,7 @@ export class Game
             playerMoved: this.playerMoved,
             rolledDice: this.rolledDice,
             currentSuggesteeId: this.currentSuggesteeId,
+            currentRefuterId: this.currentRefuterId,
             currentSuggestion: this.currentSuggestion,
             playerInGame: this.playerInGame,
             suggestionInProgress: this.suggestionInProgress
@@ -175,6 +178,7 @@ export class Game
         game.playerMoved = data.playerMoved;
         game.rolledDice = data.rolledDice;
         game.currentSuggesteeId = data.currentSuggesteeId;
+        game.currentRefuterId = data.currentRefuterId;
         game.currentSuggestion = data.currentSuggestion;
         game.playerInGame = data.playerInGame;
         game.suggestionInProgress = data.suggestionInProgress;
@@ -843,6 +847,7 @@ export class Game
         let result: Card[] | undefined = undefined;
 
         const refuter = this.players.find(player => player.id === id);
+        this.currentRefuterId = refuter!.id;
 
         for (const card of refuter!.hand)
         {
