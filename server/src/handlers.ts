@@ -273,8 +273,9 @@ export function setupHandlers(socket: GameSocket): void {
 			);
 
 			room.game.phase = GamePhase.FINISHED;
-			applyWinScore(room, socket.player.id);
+
 			socket.emit("player-won", socket.player.id);
+			applyWinScore(room, socket.player.id);
 			return;
 		}
 		else 
